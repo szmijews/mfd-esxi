@@ -1,0 +1,10 @@
+-r requirements.txt  # Ensure tests dependencies are automatically included
+
+# Put dependencies required for testing the module here
+pytest ~= 8.4
+pytest-mock ~= 3.14
+coverage ~= 7.3.0
+
+vsphere-automation-sdk @ git+https://github.com/vmware/vsphere-automation-sdk-python@v8.0.3.0
+
+mfd_typing

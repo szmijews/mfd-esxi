@@ -1,0 +1,5 @@
+pyVmomi >= 8.0.3.0.1
+packaging
+mfd_connect >= 7.12.0
+mfd_common_libs>=1.11.0
+mfd_network_adapter >= 14.0.0

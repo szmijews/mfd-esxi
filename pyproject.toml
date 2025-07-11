@@ -1,0 +1,55 @@
+[build-system]
+requires = [
+    "setuptools>=80.4.0",
+    "wheel"
+]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.dynamic]
+dependencies = { file = ["requirements.txt"] }
+
+[project]
+name = "mfd-esxi"
+description = "Module for accessing and manipulating VMware products: ESXi, VCSA and NSX"
+requires-python = ">=3.10, <3.14"
+version = "3.1.0"
+dynamic = ["dependencies"]
+license-files = ["LICENSE.md", "AUTHORS.md"]
+readme = {file = "README.md", content-type = "text/markdown"}
+
+[project.urls]
+Homepage = "https://github.com/intel/mfd"
+Repository = "https://github.com/intel/mfd-esxi"
+Issues = "https://github.com/intel/mfd-esxi/issues"
+Changelog = "https://github.com/intel/mfd-esxi/blob/main/CHANGELOG.md"
+
+[tool.setuptools.packages.find]
+exclude = ["examples", "tests*", "sphinx-doc"]
+
+[tool.black]
+line-length = 119
+exclude = '''
+(
+    /(
+        \.eggs
+      | \.git
+      | \.hg
+      | \.mypy_cache
+      | \.tox
+      | \.venv
+      | _build
+      | buck-out
+      | build
+      | dist
+      | tests
+      | examples
+    )/
+    | setup.py
+)
+'''
+
+[tool.coverage.run]
+source_pkgs = ["mfd_esxi"]
+
+[tool.coverage.report]
+exclude_also = ["if TYPE_CHECKING:"]
