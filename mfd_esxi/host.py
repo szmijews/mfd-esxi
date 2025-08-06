@@ -27,6 +27,7 @@ from .host_api import ESXiHostAPI
 from .vm_mgr import ESXiVMMgr
 from .vmknic import Vmknic
 from .vswitch import ESXivSwitch
+from .dswitch import ESXiDVSwitch
 
 if TYPE_CHECKING:
     from mfd_connect import Connection
@@ -54,6 +55,7 @@ class ESXiHypervisor:
 
         self.esxi_version = None
         self.vswitch: List[ESXivSwitch] = []
+        self.dswitch: List[ESXiDVSwitch] = []
         self.vmknic: List[Vmknic] = []
         self.mng_vmknic: Union[Vmknic, None] = None
         self.mng_ip: Union[IPv4Interface, IPv6Interface, None] = None
@@ -88,6 +90,10 @@ class ESXiHypervisor:
     def initialize_vswitch(self) -> None:
         """Read vSwitches."""
         self.vswitch = ESXivSwitch.discover(self)
+
+    def initialize_dswitch(self) -> None:
+        """Read DSwitches."""
+        self.dswitch = ESXiDVSwitch.discover(self)
 
     def initialize_vmknic(self) -> None:
         """Read vmknic adapters."""
@@ -169,6 +175,73 @@ class ESXiHypervisor:
             if name == vswitch.name or uplink in vswitch.uplinks or portgroup in vswitch.portgroups:
                 return vswitch
         raise ESXiNotFound("Could not find vSwitch")
+
+    def add_dswitch(self, name: str) -> "ESXiDVSwitch":
+        """
+        Add DSwitch on host.
+
+        :param name: name of DSwitch
+        :return: DSwitch object
+        """
+        dswitch = ESXiDVSwitch.add_dswitch_esxcfg(self, name)
+        self.dswitch.append(dswitch)
+        return dswitch
+
+    def del_dswitch(self, name: str) -> None:
+        """
+        Delete DSwitch on host.
+
+        :param name: name of DSwitch
+        """
+        for i, dswitch in enumerate(self.dswitch):
+            if dswitch.name == name:
+                dswitch.del_dswitch()
+                self.dswitch.pop(i)
+                return
+        raise ESXiNotFound(f"Could not find DSwitch {name}")
+
+    def set_dswitch(
+        self,
+        name: str,
+        uplinks: list[str],
+        portgroups: list[str] | None = None,
+        mtu: int = 1500,
+        vmknic: bool = True,
+    ) -> "ESXiDVSwitch":
+        """
+        Set existing or create new DSwitch.
+
+        :param name: name of DSwitch
+        :param uplinks: list of uplink names
+        :param portgroups: list of portgroup names
+        :param mtu: MTU value (default 1500)
+        :param vmknic: create portgroups for vmknic adapters and add them
+        :return: DSwitch object
+        """
+        portgroups = [] if portgroups is None else portgroups
+        for dswitch in self.dswitch:
+            if dswitch.name == name:
+                dswitch.reconfigure(uplinks=uplinks, portgroups=portgroups, mtu=mtu, vmknic=vmknic)
+                return dswitch
+        dswitch = self.add_dswitch(name)
+        dswitch.configure(uplinks=uplinks, portgroups=portgroups, mtu=mtu, vmknic=vmknic)
+        return dswitch
+
+    def find_dswitch(
+        self, name: str | None = None, uplink: str | None = None, portgroup: str | None = None
+    ) -> "ESXiDVSwitch":
+        """
+        Find Distributed Switch based on parameter.
+
+        :param name: name of DSwitch
+        :param uplink: uplink connected to DSwitch
+        :param portgroup: portgroup connected to DSwitch
+        :return: DSwitch object
+        """
+        for dswitch in self.dswitch:
+            if name == dswitch.name or uplink in dswitch.uplinks.values() or portgroup in dswitch.portgroups:
+                return dswitch
+        raise ESXiNotFound(f"Could not find desired DSwitch")
 
     def add_vmknic(self, portgroup: str, mtu: int = None, mac: "MACAddress" = None) -> "Vmknic":
         """
