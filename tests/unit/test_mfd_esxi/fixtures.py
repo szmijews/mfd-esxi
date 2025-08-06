@@ -443,6 +443,48 @@ esxcfg_vswitch_3 = dedent(
 """
 )
 
+esxcfg_vswitch_4 = dedent(
+    """\
+    Switch Name      Num Ports   Used Ports  Configured Ports  MTU     Uplinks
+    TESTvSwitch      6690        5           128               9000    vmnic4
+      PortGroup Name                            VLAN ID  Used Ports  Uplinks
+      TestNetwork                               0        1           vmnic4
+      PGvmnic4                                  0        1           vmnic4
+    DVS Name         Num Ports   Used Ports  Configured Ports  MTU     Uplinks
+    TestSwitch         6690        4           128               1500    vmnic0,vmnic1
+      DVPort ID                               In Use      Client
+      PG1                                     1           vmnic5
+      PG2                                     0
+"""
+)
+
+esxcfg_vswitch_5 = dedent(
+    """\
+    Switch Name      Num Ports   Used Ports  Configured Ports  MTU     Uplinks
+    TESTvSwitch      6690        5           128               9000    vmnic4
+      PortGroup Name                            VLAN ID  Used Ports  Uplinks
+      TestNetwork                               0        1           vmnic4
+      PGvmnic4                                  0        1           vmnic4
+    DVS Name         Num Ports   Used Ports  Configured Ports  MTU     Uplinks
+    TestSwitch         6690        4           128               1500    vmnic0,vmnic1
+      DVPort ID                               In Use      Client
+"""
+)
+
+esxcfg_vswitch_6 = dedent(
+    """\
+    Switch Name      Num Ports   Used Ports  Configured Ports  MTU     Uplinks
+    TESTvSwitch      6690        5           128               9000    vmnic4
+      PortGroup Name                            VLAN ID  Used Ports  Uplinks
+      TestNetwork                               0        1           vmnic4
+      PGvmnic4                                  0        1           vmnic4
+    DVS Name         Num Ports   Used Ports  Configured Ports  MTU     Uplinks
+    TestSwitch         6690        4           128               1500
+      DVPort ID                               In Use      Client
+"""
+)
+
+
 esxcfg_vmknic_1 = dedent(
     """\
     Interface  Port Group/DVPort/Opaque Network        IP Family IP Address                              Netmask         Broadcast       MAC Address       MTU     TSO MSS   Enabled Type                NetStack
@@ -486,6 +528,14 @@ esxcfg_vmknic_3 = dedent(
 """
 )
 
+esxcfg_vmknic_4 = dedent(
+    """\
+    Interface  Port Group/DVPort/Opaque Network        IP Family IP Address                              Netmask         Broadcast       MAC Address       MTU     TSO MSS   Enabled Type                NetStack
+    vmk0       PGvmnic0                                IPv4      20.20.20.1                              255.0.0.0                            255.255.0.0     172.31.255.255  00:50:aa:bb:cc:bd 1500    65535     true    DHCP                defaultTcpipStack
+    vmk0       PGvmnic0                                IPv6      fe80::b27b:25ff:fede:7484               64                              00:50:aa:bb:cc:bd 1500    65535     true    STATIC, PREFERRED   defaultTcpipStack
+"""
+)
+
 esxcfg_nics_1 = dedent(
     """\
     Name    PCI          Driver      Link Speed      Duplex MAC Address       MTU    Description
@@ -515,6 +565,41 @@ esxcfg_nics_2 = dedent(
     vmnic1  0000:e1:00.1 ntg3        Down 0Mbps      Half   70:b5:aa:bb:cc:cf 1500   Broadcom Corporation NetXtreme BCM5720 Gigabit Ethernet
     vmnic2  0000:24:00.0 icen        Down 100000Mbps Full   b4:96:aa:bb:cc:f8 1500   Intel(R) Ethernet Controller E810-C for QSFP
     vmnic3  0000:21:00.0 icen        Up   100000Mbps Full   b4:96:aa:bb:cc:fc 1500   Intel(R) Ethernet Controller E810-C for QSFP
+"""
+)
+
+net_dvs_lcores_1 = dedent(
+    """\
+    Lcore ID  Switch   Affinity
+    --------  -------  --------
+           0  TestSwitch      0
+           1  Not set        -1
+           3  Not set        -1
+"""
+)
+
+net_dvs_lcores_2 = dedent(
+    """\
+    Lcore ID  Switch   Affinity
+    --------  -------  --------
+           0  Not set        -1
+           1  Not set        -1
+"""
+)
+
+net_dvs_lcores_3 = dedent(
+    """\
+    Lcore ID  Switch   Affinity
+    --------  -------  --------
+           0  TestSwitch      0
+           1  TestSwitch      0
+"""
+)
+
+net_dvs_lcores_4 = dedent(
+    """\
+    Lcore ID  Switch   Affinity
+    --------  -------  --------
 """
 )
 
