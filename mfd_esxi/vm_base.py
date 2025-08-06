@@ -233,7 +233,7 @@ class ESXiVMBase:
                 )
             else:
                 pattern = re.compile("ipAddress =.{2}([0-9]+[.][0-9]+[.][0-9]+[.][0-9]+)")
-                ips = [ip for ip in re.findall(pattern, result.stdout) if ip_address(ip) in self.owner.mng_ip.network]
+                ips = [ip for ip in re.findall(pattern, result.stdout)]
                 if ips:
                     # We assume that vm have only one mng ip
                     return ip_address(ips[0])
