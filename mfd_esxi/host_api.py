@@ -323,7 +323,15 @@ class ESXiHostAPI(object):
         :param create_chart: indicates if table with metrics should be created
         :return: table with gathered performance metrics
         """
-        esxi_host = self.get_host()
+        for _ in range(5):
+            try:
+                esxi_host = self.get_host()
+                break
+            except Exception:
+                logger.log(level=log_levels.MODULE_DEBUG, msg="Failed to get ESXi Host, retrying in 1 second...")
+                sleep(1)
+        else:
+            raise ESXiAPISocketError(f"Unable to connect to host {self._ip} after 5 attempts.")
         perf_manager = self._content.perfManager
 
         # Get all possible counters
