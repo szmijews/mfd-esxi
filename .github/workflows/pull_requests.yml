@@ -19,7 +19,7 @@ jobs:
     secrets:
       GH_TOKEN: ${{ secrets.GH_TOKEN }}
     with:
-      REPOSITORY_NAME: ${{ github.repository }}
+      REPOSITORY_NAME: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
       BRANCH_NAME: ${{ github.head_ref }}
       PYTHON_VERSION: ${{ matrix.python_version }}
       PUSH_TAG: ${{ matrix.push_tag }}

@@ -76,6 +76,7 @@ jobs:
           fetch-depth: 0
           path: ${{ inputs.SOURCE_PATH }}
           ref: ${{ inputs.BRANCH_NAME }}
+          repository: ${{ inputs.REPOSITORY_NAME }}
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -177,7 +178,7 @@ jobs:
           password: ${{ secrets.PYPI_TOKEN }}
 
       - name: Publish comment how to build .whl
-        if: inputs.RELEASE_BUILD == false
+        if: inputs.RELEASE_BUILD == false && (github.event.pull_request != null && github.event.pull_request.head.repo.full_name == github.repository) # skip for forks
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GH_TOKEN }}
