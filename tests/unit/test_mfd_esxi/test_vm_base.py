@@ -253,3 +253,73 @@ class TestESXiVMBase:
         vm = ESXiVMBase(host)
         vm.id = 5
         assert vm.wait_for_mng_ip() == ip_address("1.1.10.1")
+
+    def test_returns_full_log_content_when_no_filters_are_applied(self, host):
+        host.connection.execute_command.return_value = ConnectionCompletedProcess(
+            return_code=0, args="command", stdout="full log content"
+        )
+        vm = ESXiVMBase(host)
+        vm.datastore = "datastore1"
+        vm.folder = "folder1"
+        result = vm.get_vm_log()
+        assert result == "full log content"
+        host.connection.execute_command.assert_called_once_with(
+            "cat /vmfs/volumes/datastore1/folder1/vmware.log", expected_return_codes={0}, shell=True
+        )
+
+    def test_applies_additional_greps_to_command(self, host):
+        host.connection.execute_command.return_value = ConnectionCompletedProcess(
+            return_code=0, args="command", stdout="filtered log"
+        )
+        vm = ESXiVMBase(host)
+        vm.datastore = "datastore1"
+        vm.folder = "folder1"
+        result = vm.get_vm_log(additional_greps="error")
+        assert result == "filtered log"
+        assert "grep -i error" in host.connection.execute_command.call_args[1]["command"]
+
+    def test_applies_additional_greps_to_command_safety(self, host):
+        host.connection.execute_command.return_value = ConnectionCompletedProcess(
+            return_code=0, args="command", stdout="filtered log"
+        )
+        vm = ESXiVMBase(host)
+        vm.datastore = "datastore1"
+        vm.folder = "folder1"
+        result = vm.get_vm_log(additional_greps="error | rm -rf *")
+        assert result == "filtered log"
+        assert "grep -i 'error | rm -rf *'" in host.connection.execute_command.call_args[1]["command"]
+
+    def test_applies_tail_lines_to_command(self, host):
+        host.connection.execute_command.return_value = ConnectionCompletedProcess(
+            return_code=0, args="command", stdout="last lines"
+        )
+        vm = ESXiVMBase(host)
+        vm.datastore = "datastore1"
+        vm.folder = "folder1"
+        result = vm.get_vm_log(lines=10)
+        assert result == "last lines"
+        assert "tail -n 10" in host.connection.execute_command.call_args[1]["command"]
+
+    def test_applies_both_greps_and_tail_when_both_are_provided(self, host):
+        host.connection.execute_command.return_value = ConnectionCompletedProcess(
+            return_code=0, args="command", stdout="filtered and tailed"
+        )
+        vm = ESXiVMBase(host)
+        vm.datastore = "datastore1"
+        vm.folder = "folder1"
+        result = vm.get_vm_log(lines=5, additional_greps="fail")
+        assert result == "filtered and tailed"
+        cmd = host.connection.execute_command.call_args[1]["command"]
+        assert "grep -i fail" in cmd and "tail -n 5" in cmd
+
+    def test_handles_none_for_lines_and_empty_greps(self, host):
+        host.connection.execute_command.return_value = ConnectionCompletedProcess(
+            return_code=0, args="command", stdout="plain log"
+        )
+        vm = ESXiVMBase(host)
+        vm.datastore = "datastore1"
+        vm.folder = "folder1"
+        result = vm.get_vm_log(lines=None, additional_greps="")
+        assert result == "plain log"
+        cmd = host.connection.execute_command.call_args[1]["command"]
+        assert "grep" not in cmd and "tail" not in cmd

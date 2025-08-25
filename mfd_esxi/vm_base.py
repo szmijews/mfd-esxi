@@ -6,6 +6,7 @@ import logging
 import re
 from ipaddress import IPv4Address, IPv6Address, ip_address
 from time import time, sleep
+from shlex import quote
 from typing import List, Union, TYPE_CHECKING
 
 from mfd_common_libs import log_levels, add_logging_level
@@ -239,3 +240,20 @@ class ESXiVMBase:
                     return ip_address(ips[0])
             sleep(5)
         return state
+
+    def get_vm_log(self, lines: int | None = None, additional_greps: str = "") -> str:
+        """
+        Get vmware.log from VM.
+
+        :param lines: number of lines from end of file
+        :param additional_greps: additional grep to filter log
+        :return: string with vmware.log content
+        """
+        command = f"cat /vmfs/volumes/{self.datastore}/{self.folder}/vmware.log"
+        if additional_greps:
+            additional_greps = quote(additional_greps)
+            command += f" | grep -i {additional_greps}"
+        if lines:
+            command += f" | tail -n {lines}"
+        result = self.owner.execute_command(command, expected_return_codes={0}, shell=True)
+        return result.stdout
