@@ -28,7 +28,25 @@ def api_call(call: Callable) -> Callable:
             return call(*args, **kwargs)
         except Unauthorized:
             try:
-                args[0]._connection._connect_to_nsx()
+                # Support both instance and staticmethod usage
+                conn = None
+                for arg in args:
+                    # class instance with _connection attribute
+                    if hasattr(arg, "_connection"):
+                        conn = arg._connection
+                        break
+                    # unnamed parameter with _connect_to_nsx method e.g. call(connection)
+                    elif hasattr(arg, "_connect_to_nsx"):
+                        conn = arg
+                        break
+                if conn is None:
+                    conn = kwargs.get("connection", None)
+                if conn is None:
+                    raise NsxApiCallError(
+                        "Unable to locate connection: "
+                        "expected an instance with _connection attribute in args or a connection kwarg."
+                    )
+                conn._connect_to_nsx()
                 return call(*args, **kwargs)
             except Error as e:
                 logger.log(
