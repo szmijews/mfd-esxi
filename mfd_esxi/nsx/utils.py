@@ -2,7 +2,10 @@
 # SPDX-License-Identifier: MIT
 """NSX utilities."""
 import logging
-import urllib3
+
+from urllib3.exceptions import ProtocolError
+from requests.exceptions import ConnectionError as RequestsConnectionError
+from http.client import RemoteDisconnected
 
 from mfd_common_libs import add_logging_level, log_levels
 from typing import Callable, Any
@@ -54,7 +57,7 @@ def api_call(call: Callable) -> Callable:
                     msg=f"Calling {call.__name__} from {call.__module__} failed with:\n {e.to_json()}",
                 )
                 raise NsxApiCallError()
-        except (ConnectionError, urllib3.exceptions.ProtocolError):
+        except (RequestsConnectionError, ProtocolError, RemoteDisconnected):
             sleep_between_tries = 2
             num_of_retries = 2
             for i in range(1, num_of_retries + 1):
@@ -66,7 +69,7 @@ def api_call(call: Callable) -> Callable:
                     )
                     sleep(sleep_between_tries)
                     return call(*args, **kwargs)
-                except (ConnectionError, urllib3.exceptions.ProtocolError):
+                except (RequestsConnectionError, ProtocolError, RemoteDisconnected):
                     continue
             raise NsxApiCallError()
         except NotFound:

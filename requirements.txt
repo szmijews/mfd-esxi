@@ -5,3 +5,4 @@ mfd_common_libs>=1.11.0
 mfd_network_adapter >= 14.0.0
 
 urllib3 >= 2.5.0
+requests
